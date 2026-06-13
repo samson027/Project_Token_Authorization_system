@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Home - Token Gatepass{% endblock %}
+{% block content %}
+<h2>Welcome to Token Gatepass System</h2>
+<p style="margin: 15px 0;">A secure token-based access control system with time-bound validity and user assignment.</p>
+
+<div style="margin: 20px 0;">
+    <h3>Features:</h3>
+    <ul style="margin-left: 25px; line-height: 1.8;">
+        <li>Admin generates time-limited tokens in batches</li>
+        <li>Users claim tokens with their username (first-come-first-served)</li>
+        <li>Token locks to first user - re-login requires same credentials</li>
+        <li>Automatic expiry based on admin-set duration</li>
+        <li>Admin can manually deactivate tokens</li>
+    </ul>
+</div>
+
+<p style="margin-top: 20px;">
+    <strong>New User?</strong> Go to <a href="{{ url_for('login') }}">User Login</a> with your token.<br>
+    <strong>Administrator?</strong> Access the <a href="{{ url_for('admin') }}">Admin Panel</a>.
+</p>
+{% endblock %}

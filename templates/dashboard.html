@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>👤 User Dashboard</h2>
+<p>Welcome, <strong>{{ user }}</strong>! You are successfully logged in.</p>
+
+{% if token %}
+<div class="token-info">
+    <h3>Your Token Details:</h3>
+    <p><strong>Token Code:</strong> {{ token.code }}</p>
+    <p><strong>Batch ID:</strong> {{ token.batch_id[:8] }}...</p>
+    <p><strong>Status:</strong> 
+        <span class="{% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
+            {{ 'Active' if token.is_active else 'Deactivated' }}
+        </span>
+    </p>
+    <p><strong>Created:</strong> {{ token.created_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
+    <p><strong>Expires:</strong> {{ token.expires_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
+</div>
+{% endif %}
+
+<p style="margin-top: 20px;">
+    <a href="{{ url_for('logout') }}"><button>Logout</button></a>
+</p>
+{% endblock %}

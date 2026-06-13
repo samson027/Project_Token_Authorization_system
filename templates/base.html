@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Token Gatepass System{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 { color: #667eea; margin-bottom: 10px; }
+        h2 { color: #333; margin: 20px 0 10px; }
+        .nav { margin: 20px 0; padding: 10px 0; border-bottom: 2px solid #eee; }
+        .nav a { 
+            color: #667eea; 
+            text-decoration: none; 
+            margin-right: 20px;
+            font-weight: bold;
+        }
+        .nav a:hover { text-decoration: underline; }
+        
+        /* Flash messages */
+        .flash-messages { margin: 20px 0; }
+        .flash { 
+            padding: 12px 20px; 
+            border-radius: 5px; 
+            margin-bottom: 10px;
+        }
+        .flash.success { background: #d4edda; color: #155724; }
+        .flash.error { background: #f8d7da; color: #721c24; }
+        .flash.info { background: #d1ecf1; color: #0c5460; }
+        
+        /* Forms */
+        form { margin: 20px 0; }
+        input, button { 
+            padding: 12px 15px; 
+            margin: 8px 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #667eea; }
+        button { 
+            background: #667eea; 
+            color: white; 
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #5568d3; }
+        
+        /* Tables */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: left; 
+        }
+        th { 
+            background: #667eea; 
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) { background: #f9f9f9; }
+        tr:hover { background: #f1f1f1; }
+        
+        .status-active { color: green; font-weight: bold; }
+        .status-inactive { color: red; font-weight: bold; }
+        .token-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎫 Token Gatepass System</h1>
+        
+        <div class="nav">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('login') }}">User Login</a>
+            <a href="{{ url_for('admin') }}">Admin Panel</a>
+            {% if session.get('username') %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

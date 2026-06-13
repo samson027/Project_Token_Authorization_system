@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+{% block content %}
+<h2>⚙️ Admin Panel</h2>
+
+<h3>Generate New Tokens</h3>
+<form method="POST">
+    <div>
+        <input type="number" name="quantity" placeholder="Quantity (1-100)" min="1" max="100" required>
+        <input type="number" name="duration" placeholder="Valid for (hours)" min="1" max="168" required>
+        <button type="submit">Generate Tokens</button>
+    </div>
+</form>
+
+<h3>Claimed Tokens (Live Dashboard)</h3>
+{% if claimed_tokens %}
+<table>
+    <thead>
+        <tr>
+            <th>Token Code</th>
+            <th>Assigned User</th>
+            <th>Batch ID</th>
+            <th>Created At</th>
+            <th>Expires At</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for token in claimed_tokens %}
+        <tr>
+            <td><strong>{{ token.code }}</strong></td>
+            <td>{{ token.assigned_user }}</td>
+            <td>{{ token.batch_id[:8] }}...</td>
+            <td>{{ token.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ token.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                <span class="{% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
+                    {{ 'Active' if token.is_active else 'Inactive' }}
+                </span>
+            </td>
+            <td>
+                <a href="{{ url_for('toggle_token', token_id=token.id) }}">
+                    <button style="padding: 5px 10px; font-size: 12px;">
+                        {{ 'Deactivate' if token.is_active else 'Activate' }}
+                    </button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color: #999;">No tokens have been claimed yet.</p>
+{% endif %}
+
+<h3>All Generated Tokens</h3>
+{% if all_tokens %}
+<table>
+    <thead>
+        <tr>
+            <th>Token Code</th>
+            <th>Assigned User</th>
+            <th>Created At</th>
+            <th>Expires At</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for token in all_tokens %}
+        <tr>
+            <td><strong>{{ token.code }}</strong></td>
+            <td>{{ token.assigned_user or '<em>Unclaimed</em>' | safe }}</td>
+            <td>{{ token.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ token.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                <span class="{% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
+                    {{ 'Active' if token.is_active else 'Inactive' }}
+                </span>
+            </td>
+            <td>
+                <a href="{{ url_for('toggle_token', token_id=token.id) }}">
+                    <button style="padding: 5px 10px; font-size: 12px;">
+                        {{ 'Deactivate' if token.is_active else 'Activate' }}
+                    </button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color: #999;">No tokens generated yet.</p>
+{% endif %}
+{% endblock %}

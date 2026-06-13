@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}User Login{% endblock %}
+{% block content %}
+<h2>🔐 User Login</h2>
+<p>Enter your username and the token provided by the administrator.</p>
+
+<form method="POST">
+    <div>
+        <input type="text" name="username" placeholder="Enter your username" required>
+    </div>
+    <div>
+        <input type="text" name="token" placeholder="Enter token (e.g., TKN-882)" required>
+    </div>
+    <button type="submit">Login</button>
+</form>
+
+<p style="margin-top: 20px; color: #666;">
+    <strong>Note:</strong> Tokens can only be used once by the first user. Use the same token to re-login.
+</p>
+{% endblock %}
