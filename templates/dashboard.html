@@ -1,25 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard - Token Authorization System{% endblock %}
 {% block content %}
-<h2>👤 User Dashboard</h2>
-<p>Welcome, <strong>{{ user }}</strong>! You are successfully logged in.</p>
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2>👤 User Dashboard</h2>
+    <div style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--card-border); border-radius: 12px; padding: 30px; margin-top: 20px;">
+        <p style="font-size: 1.1rem; margin-bottom: 25px; color: var(--text-primary);">
+            Welcome back, <strong style="color: var(--accent);">{{ user }}</strong>! You have authorized access.
+        </p>
 
-{% if token %}
-<div class="token-info">
-    <h3>Your Token Details:</h3>
-    <p><strong>Token Code:</strong> {{ token.code }}</p>
-    <p><strong>Batch ID:</strong> {{ token.batch_id[:8] }}...</p>
-    <p><strong>Status:</strong> 
-        <span class="{% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
-            {{ 'Active' if token.is_active else 'Deactivated' }}
-        </span>
-    </p>
-    <p><strong>Created:</strong> {{ token.created_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
-    <p><strong>Expires:</strong> {{ token.expires_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
+        {% if token %}
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Credential Pass Details</span>
+                <span class="status-badge {% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
+                    {{ 'Active' if token.is_active else 'Deactivated' }}
+                </span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px 20px; font-size: 0.9rem;">
+                <div>
+                    <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2px;">Token Code</span>
+                    <strong class="token-code">{{ token.code }}</strong>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2px;">Batch Reference</span>
+                    <span style="font-family: monospace; color: var(--text-secondary);">{{ token.batch_id[:8] }}...</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2px;">Authorized On</span>
+                    <span style="color: var(--text-primary);">{{ token.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</span>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2px;">Expires At</span>
+                    <span style="color: var(--text-primary); font-weight: 500;">{{ token.expires_at.strftime('%Y-%m-%d %H:%M') }} UTC</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <p class="subtext">Verify session validity with the expiry timestamp above.</p>
+            <a href="{{ url_for('logout') }}">
+                <button style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: none; padding: 10px 20px;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                    Sign Out
+                </button>
+            </a>
+        </div>
+    </div>
 </div>
-{% endif %}
-
-<p style="margin-top: 20px;">
-    <a href="{{ url_for('logout') }}"><button>Logout</button></a>
-</p>
 {% endblock %}
+

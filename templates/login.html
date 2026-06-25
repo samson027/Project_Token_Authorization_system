@@ -1,20 +1,30 @@
 {% extends "base.html" %}
-{% block title %}User Login{% endblock %}
+{% block title %}User Login - Token Authorization System{% endblock %}
 {% block content %}
-<h2>🔐 User Login</h2>
-<p>Enter your username and the token provided by the administrator.</p>
+<div style="max-width: 480px; margin: 20px auto; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--card-border); border-radius: 12px; padding: 30px;">
+    <h2>🔐 User Access</h2>
+    <p style="margin-bottom: 20px;">Enter your username and the temporary token provided by the administrator to claim access.</p>
 
-<form method="POST">
-    <div>
-        <input type="text" name="username" placeholder="Enter your username" required>
-    </div>
-    <div>
-        <input type="text" name="token" placeholder="Enter token (e.g., TKN-882)" required>
-    </div>
-    <button type="submit">Login</button>
-</form>
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="e.g., john_doe" required autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label for="token">Authorization Token</label>
+            <input type="text" id="token" name="token" placeholder="e.g., TKN-882143" required>
+        </div>
+        
+        <button type="submit" style="width: 100%; margin-top: 10px;">
+            Authenticate Access
+        </button>
+    </form>
 
-<p style="margin-top: 20px; color: #666;">
-    <strong>Note:</strong> Tokens can only be used once by the first user. Use the same token to re-login.
-</p>
+    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--card-border); font-size: 0.85rem; color: var(--text-secondary);">
+        <strong>ℹ️ Token Locking Policy:</strong>
+        <p style="margin-top: 5px; line-height: 1.4;">Tokens lock to the first username that logs in with them. Subsequent logins with this token must use the identical username.</p>
+    </div>
+</div>
 {% endblock %}
+

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Admin Login - Token Authorization System{% endblock %}
+{% block content %}
+<div style="max-width: 480px; margin: 20px auto; background: rgba(255, 255, 255, 0.01); border: 1px solid var(--card-border); border-radius: 12px; padding: 30px;">
+    <h2>⚙️ Administrator Portal</h2>
+    <p style="margin-bottom: 20px;">Provide your administrator credentials to manage tokens and view system metrics.</p>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Admin Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter admin username" required autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Admin Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter admin password" required>
+        </div>
+        
+        <button type="submit" style="width: 100%; margin-top: 10px;">
+            Access Panel
+        </button>
+    </form>
+</div>
+{% endblock %}

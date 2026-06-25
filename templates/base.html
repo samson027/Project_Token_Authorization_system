@@ -3,103 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Token Gatepass System{% endblock %}</title>
+    <title>{% block title %}Token Authorization System{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        :root {
+            --bg-gradient: linear-gradient(135deg, #070b19 0%, #0f172a 50%, #1e3a8a 100%);
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --card-border: rgba(217, 119, 6, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #d97706;
+            --accent-glow: rgba(217, 119, 6, 0.25);
+            --accent-hover: #b45309;
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --error: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.15);
+            --info: #06b6d4;
+            --info-glow: rgba(6, 182, 212, 0.15);
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+            --font-display: 'Outfit', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-gradient);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow-x: hidden;
+            line-height: 1.5;
         }
+
+        /* Abstract glowing blobs for premium feel */
+        .glowing-bg {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(217, 119, 6, 0.08) 0%, rgba(0,0,0,0) 70%);
+            top: -100px;
+            left: -100px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glowing-bg-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.2) 0%, rgba(0,0,0,0) 70%);
+            bottom: -100px;
+            right: -100px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
         .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            padding: 30px;
-            max-width: 900px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            max-width: 950px;
             width: 100%;
+            position: relative;
+            z-index: 10;
         }
-        h1 { color: #667eea; margin-bottom: 10px; }
-        h2 { color: #333; margin: 20px 0 10px; }
-        .nav { margin: 20px 0; padding: 10px 0; border-bottom: 2px solid #eee; }
-        .nav a { 
-            color: #667eea; 
-            text-decoration: none; 
-            margin-right: 20px;
-            font-weight: bold;
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            letter-spacing: -0.02em;
         }
-        .nav a:hover { text-decoration: underline; }
-        
-        /* Flash messages */
-        .flash-messages { margin: 20px 0; }
-        .flash { 
-            padding: 12px 20px; 
-            border-radius: 5px; 
-            margin-bottom: 10px;
+
+        h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(to right, #fef08a, #fbbf24, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .flash.success { background: #d4edda; color: #155724; }
-        .flash.error { background: #f8d7da; color: #721c24; }
-        .flash.info { background: #d1ecf1; color: #0c5460; }
-        
-        /* Forms */
-        form { margin: 20px 0; }
-        input, button { 
-            padding: 12px 15px; 
-            margin: 8px 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+
+        h2 {
+            color: var(--text-primary);
+            font-size: 1.6rem;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 12px;
         }
-        input:focus { outline: none; border-color: #667eea; }
-        button { 
-            background: #667eea; 
-            color: white; 
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
+
+        h3 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            margin: 25px 0 15px;
         }
-        button:hover { background: #5568d3; }
-        
-        /* Tables */
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Modernized Navigation Bar */
+        .nav {
+            margin: 20px 0 30px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+        }
+
+        .nav a:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav a.active-link {
+            color: var(--text-primary);
+            background: rgba(217, 119, 6, 0.15);
+            border-color: rgba(217, 119, 6, 0.25);
+        }
+
+        /* Modernized Flash messages */
+        .flash-messages {
             margin: 20px 0;
-            font-size: 14px;
         }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 12px; 
-            text-align: left; 
+
+        .flash {
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
         }
-        th { 
-            background: #667eea; 
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .flash.success {
+            background: var(--success-glow);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .flash.error {
+            background: var(--error-glow);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .flash.info {
+            background: var(--info-glow);
+            color: #38bdf8;
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+
+        /* Forms */
+        form {
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: var(--font-sans);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        input::placeholder {
+            color: #6b7280;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        button {
+            background: var(--accent);
             color: white;
-            font-weight: bold;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        tr:nth-child(even) { background: #f9f9f9; }
-        tr:hover { background: #f1f1f1; }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr {
+            transition: background 0.15s ease;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Statuses */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+        }
+
+        .status-active::before {
+            background: #10b981;
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+        }
+
+        .status-inactive::before {
+            background: #ef4444;
+        }
+
+        .token-code {
+            font-family: monospace;
+            background: rgba(217, 119, 6, 0.08);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #fcd34d;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            border: 1px solid rgba(217, 119, 6, 0.15);
+        }
+
+        .token-info {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            padding: 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        /* General Utilities */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
         
-        .status-active { color: green; font-weight: bold; }
-        .status-inactive { color: red; font-weight: bold; }
-        .token-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        a:hover {
+            color: var(--text-primary);
+        }
+
+        .subtext {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
+    <div class="glowing-bg"></div>
+    <div class="glowing-bg-2"></div>
+
     <div class="container">
-        <h1>🎫 Token Gatepass System</h1>
+        <h1>🎫 Token Authorization System</h1>
         
         <div class="nav">
-            <a href="{{ url_for('index') }}">Home</a>
-            <a href="{{ url_for('login') }}">User Login</a>
-            <a href="{{ url_for('admin') }}">Admin Panel</a>
+            <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active-link{% endif %}">Home</a>
+            
             {% if session.get('username') %}
-                <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
+                <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active-link{% endif %}">User Dashboard</a>
+                <a href="{{ url_for('logout') }}">User Logout ({{ session['username'] }})</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="{% if request.endpoint == 'login' %}active-link{% endif %}">User Login</a>
+            {% endif %}
+
+            {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin') }}" class="{% if request.endpoint == 'admin' %}active-link{% endif %}">Admin Dashboard</a>
+                <a href="{{ url_for('admin_logout') }}">Admin Logout</a>
+            {% else %}
+                <a href="{{ url_for('admin_login') }}" class="{% if request.endpoint == 'admin_login' %}active-link{% endif %}">Admin Panel</a>
             {% endif %}
         </div>
         
@@ -107,7 +416,16 @@
             {% if messages %}
                 <div class="flash-messages">
                     {% for category, message in messages %}
-                        <div class="flash {{ category }}">{{ message }}</div>
+                        <div class="flash {{ category }}">
+                            {% if category == 'success' %}
+                                🟢
+                            {% elif category == 'error' %}
+                                🔴
+                            {% else %}
+                                🔵
+                            {% endif %}
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 </div>
             {% endif %}

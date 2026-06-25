@@ -1,96 +1,156 @@
 {% extends "base.html" %}
-{% block title %}Admin Panel{% endblock %}
+{% block title %}Admin Panel - Token Authorization System{% endblock %}
 {% block content %}
-<h2>⚙️ Admin Panel</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+    <h2>⚙️ Administrator Dashboard</h2>
+    <a href="{{ url_for('admin_logout') }}">
+        <button style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: none; padding: 8px 16px; font-size: 0.85rem;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+            Admin Logout
+        </button>
+    </a>
+</div>
 
-<h3>Generate New Tokens</h3>
-<form method="POST">
-    <div>
-        <input type="number" name="quantity" placeholder="Quantity (1-100)" min="1" max="100" required>
-        <input type="number" name="duration" placeholder="Valid for (hours)" min="1" max="168" required>
-        <button type="submit">Generate Tokens</button>
+<!-- Stats Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Total Tokens</span>
+        <strong style="font-size: 1.8rem; font-family: var(--font-display); color: #a5b4fc;">{{ all_tokens | length }}</strong>
     </div>
-</form>
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Claimed (Active/Used)</span>
+        <strong style="font-size: 1.8rem; font-family: var(--font-display); color: var(--accent);">{{ claimed_tokens | length }}</strong>
+    </div>
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Unclaimed</span>
+        <strong style="font-size: 1.8rem; font-family: var(--font-display); color: var(--success);">
+            {{ (all_tokens | selectattr('assigned_user', 'none') | list) | length }}
+        </strong>
+    </div>
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary);">Deactivated</span>
+        <strong style="font-size: 1.8rem; font-family: var(--font-display); color: var(--error);">
+            {{ (all_tokens | selectattr('is_active', 'equalto', false) | list) | length }}
+        </strong>
+    </div>
+</div>
 
-<h3>Claimed Tokens (Live Dashboard)</h3>
-{% if claimed_tokens %}
-<table>
-    <thead>
-        <tr>
-            <th>Token Code</th>
-            <th>Assigned User</th>
-            <th>Batch ID</th>
-            <th>Created At</th>
-            <th>Expires At</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for token in claimed_tokens %}
-        <tr>
-            <td><strong>{{ token.code }}</strong></td>
-            <td>{{ token.assigned_user }}</td>
-            <td>{{ token.batch_id[:8] }}...</td>
-            <td>{{ token.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>{{ token.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>
-                <span class="{% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
-                    {{ 'Active' if token.is_active else 'Inactive' }}
-                </span>
-            </td>
-            <td>
-                <a href="{{ url_for('toggle_token', token_id=token.id) }}">
-                    <button style="padding: 5px 10px; font-size: 12px;">
-                        {{ 'Deactivate' if token.is_active else 'Activate' }}
-                    </button>
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p style="color: #999;">No tokens have been claimed yet.</p>
-{% endif %}
+<!-- Token Generation form -->
+<div style="background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); border-radius: 12px; padding: 25px; margin-bottom: 40px;">
+    <h3 style="margin-top: 0; margin-bottom: 15px;">🔨 Generate New Tokens</h3>
+    <form method="POST" style="margin: 0;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display:block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; color: var(--text-secondary); font-weight:600;">Quantity</label>
+                <input type="number" name="quantity" placeholder="Quantity (1-100)" min="1" max="100" required style="width: 100%;">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display:block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; color: var(--text-secondary); font-weight:600;">Validity (Hours)</label>
+                <input type="number" name="duration" placeholder="Hours (1-168)" min="1" max="168" required style="width: 100%;">
+            </div>
+            <button type="submit" style="padding: 12px 24px; white-space: nowrap;">
+                Generate Token Batch
+            </button>
+        </div>
+    </form>
+</div>
 
-<h3>All Generated Tokens</h3>
+<!-- Search and Filters -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+    <h3 style="margin: 0;">📋 Token Registry & Management</h3>
+    <input type="text" id="tokenSearch" placeholder="🔍 Search by token, user, or status..." style="max-width: 320px; padding: 8px 12px; font-size: 0.85rem;">
+</div>
+
+<!-- Token Table -->
 {% if all_tokens %}
-<table>
-    <thead>
-        <tr>
-            <th>Token Code</th>
-            <th>Assigned User</th>
-            <th>Created At</th>
-            <th>Expires At</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for token in all_tokens %}
-        <tr>
-            <td><strong>{{ token.code }}</strong></td>
-            <td>{{ token.assigned_user or '<em>Unclaimed</em>' | safe }}</td>
-            <td>{{ token.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>{{ token.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>
-                <span class="{% if token.is_active %}status-active{% else %}status-inactive{% endif %}">
-                    {{ 'Active' if token.is_active else 'Inactive' }}
-                </span>
-            </td>
-            <td>
-                <a href="{{ url_for('toggle_token', token_id=token.id) }}">
-                    <button style="padding: 5px 10px; font-size: 12px;">
-                        {{ 'Deactivate' if token.is_active else 'Activate' }}
-                    </button>
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="table-container">
+    <table id="tokenTable">
+        <thead>
+            <tr>
+                <th>Token Code</th>
+                <th>Assigned User</th>
+                <th>Created At</th>
+                <th>Expires At</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for token in all_tokens %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <strong class="token-code">{{ token.code }}</strong>
+                        <button onclick="copyToClipboard('{{ token.code }}', this)" style="padding: 4px 8px; font-size: 0.7rem; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: var(--text-secondary); box-shadow: none; border-radius: 4px;" title="Copy Code">
+                            Copy
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    {% if token.assigned_user %}
+                        <span style="color: var(--accent); font-weight: 500;">👤 {{ token.assigned_user }}</span>
+                    {% else %}
+                        <span style="color: #6b7280; font-style: italic;">Unclaimed</span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ token.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ token.expires_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% if token.is_valid() %}
+                        <span class="status-badge status-active">Active</span>
+                    {% elif not token.is_active %}
+                        <span class="status-badge status-inactive">Disabled</span>
+                    {% else %}
+                        <span class="status-badge status-inactive" style="background: rgba(239, 68, 68, 0.05); color: #f87171; border-color: rgba(239, 68, 68, 0.1);">Expired</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">
+                    <a href="{{ url_for('toggle_token', token_id=token.id) }}">
+                        <button style="padding: 6px 12px; font-size: 0.75rem; box-shadow: none; {% if token.is_active %}background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);{% else %}background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);{% endif %}"
+                                onmouseover="this.style.background='{% if token.is_active %}rgba(239,68,68,0.2){% else %}rgba(16,185,129,0.2){% endif %}'"
+                                onmouseout="this.style.background='{% if token.is_active %}rgba(239,68,68,0.1){% else %}rgba(16,185,129,0.1){% endif %}'">
+                            {{ 'Deactivate' if token.is_active else 'Activate' }}
+                        </button>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
-<p style="color: #999;">No tokens generated yet.</p>
+<p style="color: var(--text-secondary); text-align: center; padding: 30px; border: 1px dashed var(--card-border); border-radius: 8px;">
+    No tokens generated yet. Use the tool above to generate your first batch.
+</p>
 {% endif %}
+
+<script>
+    // Client-side instant search
+    document.getElementById('tokenSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#tokenTable tbody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(term) ? '' : 'none';
+        });
+    });
+
+    // Copy to Clipboard helper
+    function copyToClipboard(text, button) {
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = button.innerHTML;
+            button.innerHTML = 'Copied!';
+            button.style.background = 'rgba(16, 185, 129, 0.2)';
+            button.style.color = '#34d399';
+            button.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = '';
+                button.style.color = '';
+                button.style.borderColor = '';
+            }, 1200);
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
+        });
+    }
+</script>
 {% endblock %}

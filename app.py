@@ -1,15 +1,26 @@
 # app.py
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from models import db, Token
+from models import db, Token, utc_now
 from datetime import datetime, timedelta
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your-super-secret-key-change-in-production'
+app.secret_key = os.environ.get('SECRET_KEY', 'your-super-secret-key-change-in-production')
 
-# PythonAnywhere MySQL Configuration
-# REPLACE: yourusername, yourpassword with YOUR actual credentials
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://lota:ramya%4066@lota.mysql.pythonanywhere-services.com/lota$gatepassdb'
+# Database Configuration
+# Fallback to local SQLite for development if no DATABASE_URL is provided
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    database_url = 'sqlite:///gatepass.db'
+elif database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 280}
 
@@ -19,14 +30,52 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Admin Credentials
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin')
+
+def is_admin_logged_in():
+    """Helper to check if administrator is logged in"""
+    return session.get('is_admin') is True
+
 @app.route('/')
 def index():
     """Homepage with navigation"""
     return render_template('index.html')
 
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Login route for admin panel"""
+    if is_admin_logged_in():
+        return redirect(url_for('admin'))
+        
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        password = request.form['password'].strip()
+        
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            flash('Welcome, Administrator! You have logged in successfully.', 'success')
+            return redirect(url_for('admin'))
+        else:
+            flash('Invalid administrator credentials.', 'error')
+            
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    """Logout route for admin panel"""
+    session.pop('is_admin', None)
+    flash('Administrator logged out successfully.', 'success')
+    return redirect(url_for('index'))
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     """Admin panel: Generate tokens and view claimed tokens"""
+    if not is_admin_logged_in():
+        flash('Please log in as an administrator first.', 'error')
+        return redirect(url_for('admin_login'))
+
     if request.method == 'POST':
         try:
             quantity = int(request.form['quantity'])
@@ -42,7 +91,7 @@ def admin():
             
             # Generate batch ID for this group of tokens
             batch_id = str(uuid.uuid4())
-            expires_at = datetime.utcnow() + timedelta(hours=duration_hours)
+            expires_at = utc_now() + timedelta(hours=duration_hours)
             
             generated_codes = []
             for _ in range(quantity):
@@ -77,6 +126,10 @@ def admin():
 @app.route('/admin/toggle/<int:token_id>')
 def toggle_token(token_id):
     """Toggle is_active status for a token"""
+    if not is_admin_logged_in():
+        flash('Unauthorized access.', 'error')
+        return redirect(url_for('admin_login'))
+        
     token = Token.query.get_or_404(token_id)
     token.is_active = not token.is_active
     db.session.commit()
@@ -149,7 +202,8 @@ def dashboard():
 def logout():
     """User logout - clears session"""
     username = session.get('username', 'User')
-    session.clear()
+    session.pop('username', None)
+    session.pop('token_code', None)
     flash(f'Goodbye {username}! You have been logged out.', 'success')
     return redirect(url_for('index'))
 
@@ -164,3 +218,4 @@ def server_error(e):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
