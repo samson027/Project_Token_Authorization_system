@@ -13,10 +13,20 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-super-secret-key-change-in-production')
 
 # Database Configuration
-# Fallback to local SQLite for development if no DATABASE_URL is provided
+# Check if the current working directory is writable. If not (e.g., read-only filesystem on Vercel),
+# fallback to using the /tmp/ directory for the SQLite database.
+is_writable = True
+try:
+    test_file = os.path.join(os.getcwd(), '.write_test')
+    with open(test_file, 'w') as f:
+        f.write('test')
+    os.remove(test_file)
+except Exception:
+    is_writable = False
+
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
-    if os.environ.get('VERCEL'):
+    if not is_writable:
         database_url = 'sqlite:////tmp/gatepass.db'
     else:
         database_url = 'sqlite:///gatepass.db'
