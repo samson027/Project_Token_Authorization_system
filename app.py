@@ -16,7 +16,10 @@ app.secret_key = os.environ.get('SECRET_KEY', 'your-super-secret-key-change-in-p
 # Fallback to local SQLite for development if no DATABASE_URL is provided
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
-    database_url = 'sqlite:///gatepass.db'
+    if os.environ.get('VERCEL'):
+        database_url = 'sqlite:////tmp/gatepass.db'
+    else:
+        database_url = 'sqlite:///gatepass.db'
 elif database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
