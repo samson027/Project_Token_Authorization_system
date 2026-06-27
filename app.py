@@ -6,8 +6,9 @@ from datetime import datetime, timedelta
 import uuid
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the project directory
+project_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(project_dir, '.env'))
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-super-secret-key-change-in-production')
@@ -44,8 +45,8 @@ with app.app_context():
     db.create_all()
 
 # Admin Credentials
-ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin')
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin').strip()
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin').strip()
 
 def is_admin_logged_in():
     """Helper to check if administrator is logged in"""
